@@ -1,7 +1,9 @@
 # pde-net-in-tf
 My implementation of PDE-Net in Tensorflow
 
-Run main.py
+It suffices to run main.py and compare the results to the generated data
+
+The output contains the learned coefficients (the ones corresponding to the lowest order derivatives first) and moment-matrices.
 
 As for examples, simply change the fifth line in inferring_the_pde.py to one of the following:
 - import cfd_python.advection_diffusion.generate_data as gD
