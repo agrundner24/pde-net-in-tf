@@ -1,11 +1,8 @@
 import numpy as np
-from .. import common_methods as com
-
-
+import common_methods as com
 # import matplotlib.pyplot as plt
 # import matplotlib.cm as cm
 # from mpl_toolkits.mplot3d import Axes3D
-
 
 def generate(options):
     """
@@ -17,40 +14,30 @@ def generate(options):
              down-sampled sub-grids for all dt-layers.
     """
 
-    # u_t = a*u_x + b*u_y + c*u_{xx} + d*u_{yy}
+    # Diffusion with non-linear source-term 15*sin(u) (cf. PDE-Net)
 
     # Variable declarations
     nx = options['mesh_size'][0]
     ny = options['mesh_size'][1]
     nt = options['layers']
-    batch_size = options['batch_size']
     dt = options['dt']
     noise_level = options['noise_level']
     downsample_by = options['downsample_by']
+    batch_size = options['batch_size']
 
-    # Really good with a = b = 2
-    a = 2
-    b = 2
-    c = 0
-    d = 0
+    nu = 0.0
 
-    dx = 2 * np.pi / (nx - 1)
-    dy = 2 * np.pi / (ny - 1)
+    dx = 2*np.pi/(nx - 1)
+    dy = 2*np.pi/(ny - 1)
 
     ## Needed for plotting:
     # x = np.linspace(0, 2*np.pi, num = nx)
     # y = np.linspace(0, 2*np.pi, num = ny)
     # X, Y = np.meshgrid(x, y)
 
-    ############ Change the following lines to implement your own data ############
+    ########################### Change the following lines to implement your own data ###########################
 
-    # Assign initial function:
-    u = np.ones((ny, nx))
-    un = np.ones((ny, nx))
-
-    ## Assign initial conditions
-    # u[int(0.5/dy):int(1/dy) + 1, int(0.5/dy):int(1/dy) + 1] = 2
-
+    ## Assign initial function:
     u = com.initgen(options['mesh_size'], freq=4, boundary='Periodic')
 
     ## Plotting the initial function:
@@ -66,13 +53,13 @@ def generate(options):
     for n in range(nt - 1):
         un = u.copy()
 
-        u[1:-1, 1:-1] = un[1:-1, 1:-1] + c * dt / dx ** 2 * (un[1:-1, 2:] - 2 * un[1:-1, 1:-1] + un[1:-1, 0:-2]) + \
-                        d * dt / dy ** 2 * (un[2:, 1: -1] - 2 * un[1:-1, 1:-1] + un[0:-2, 1:-1]) + \
-                        a * dt / dx * (un[1:-1, 2:] - un[1:-1, 1:-1]) + b * dt / dy * (un[2:, 1:-1] - un[1:-1, 1:-1])
+        u[1:-1, 1:-1] = un[1:-1,1:-1] + nu * dt / dx**2 * (un[1:-1, 2:] - 2 * un[1:-1, 1:-1] + un[1:-1, 0:-2]) + \
+                        nu * dt / dy**2 * (un[2:,1: -1] - 2 * un[1:-1, 1:-1] + un[0:-2, 1:-1]) \
+                        + dt * 15*np.sin(un[1:-1,1:-1])
 
         u = com.pad_input_2(u[1:-1, 1:-1], 1)
 
-        sample['u' + str(n + 1)] = u
+        sample['u' + str(n+1)] = u
 
     ## sample should at this point be a dictionary with entries 'u0', ..., 'uL', where L = nt                   ##
     ## For a given j, sample['uj'] is a matrix of size nx x ny containing the function values at time-step dt*j ##
@@ -88,6 +75,7 @@ def generate(options):
     # plt.show()
 
     for i in range(batch_size):
+
         sample_tmp = sample.copy()
         com.downsample(sample_tmp, downsample_by)
         com.addNoise(sample_tmp, noise_level, nt)

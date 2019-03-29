@@ -1,11 +1,19 @@
 import numpy as np
 from .. import common_methods as com
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+# import matplotlib.pyplot as plt
+# import matplotlib.cm as cm
+# from mpl_toolkits.mplot3d import Axes3D
 
-from mpl_toolkits.mplot3d import Axes3D
 
 def generate(options):
+    """
+    Generating data / function-values on a regular grid of space-time, adding noise and taking a batch of
+    down-sampled regular sub-grids of this grid. This batch will contain the samples to train our network with.
+
+    :param options: The dictionary of user-specified options (cf. main.py). Contains e.g. the grid-dimensions, the noise
+    :return: A batch (as a list) of samples (as dictionaries), that in turn consist of (noisy) function values on
+             down-sampled sub-grids for all dt-layers.
+    """
 
     # Variable declarations
     nx = options['mesh_size'][0]
@@ -19,22 +27,25 @@ def generate(options):
     a = 0
     b = -10
 
-    dx = 2*np.pi/(nx - 1)
-    dy = 2*np.pi/(ny - 1)
+    dx = 2 * np.pi / (nx - 1)
+    dy = 2 * np.pi / (ny - 1)
 
+    ## Needed for plotting:
     # x = np.linspace(0, 2*np.pi, num = nx)
     # y = np.linspace(0, 2*np.pi, num = ny)
     # X, Y = np.meshgrid(x, y)
-    #
-    # u = np.ones((ny, nx))
-    # un = np.ones((ny, nx))
 
-    # Assign initial conditions
+    ############ Change the following lines to implement your own data ############
+
+    ## Assign initial function:
     u = com.initgen(options['mesh_size'], freq=4, boundary='Periodic')
 
+    ## Plotting the initial function:
     # fig = plt.figure(figsize=(11,7), dpi=100)
     # ax = fig.gca(projection='3d')
     # surf = ax.plot_surface(X, Y, u[:], cmap=cm.viridis)
+    #
+    # plt.show()
 
     sample = {}
     sample['u0'] = u
@@ -42,7 +53,8 @@ def generate(options):
     for n in range(nt - 1):
         un = u.copy()
 
-        u[1:-1, 1:-1] = un[1:-1, 1:-1] - dt*(a*(un[1:-1, 1:-1] - un[1:-1, :-2])/dx + b*(un[1:-1, 1:-1] - un[:-2, 1:-1])/dy)
+        u[1:-1, 1:-1] = un[1:-1, 1:-1] - dt * (
+                    a * (un[1:-1, 1:-1] - un[1:-1, :-2]) / dx + b * (un[1:-1, 1:-1] - un[:-2, 1:-1]) / dy)
 
         u = com.pad_input_2(u[1:-1, 1:-1], 1)
         # u[0,:] = 1
@@ -50,19 +62,22 @@ def generate(options):
         # u[:,0] = 1
         # u[:,-1] = 1
 
-        sample['u' + str(n+1)] = u
+        sample['u' + str(n + 1)] = u
 
+    ## sample should at this point be a dictionary with entries 'u0', ..., 'uL', where L = nt                   ##
+    ## For a given j, sample['uj'] is a matrix of size nx x ny containing the function values at time-step dt*j ##
+    ###############################################################################
+
+    batch = []
+
+    ## Plotting the function values from the last layer:
     # fig2 = plt.figure()
     # ax2 = fig2.gca(projection='3d')
     # surf2 = ax2.plot_surface(X, Y, u, cmap=cm.viridis)
     #
     # plt.show()
 
-
-    batch = []
-
     for i in range(batch_size):
-
         sample_tmp = sample.copy()
         com.downsample(sample_tmp, downsample_by)
         com.addNoise(sample_tmp, noise_level, nt)
@@ -70,5 +85,3 @@ def generate(options):
         batch.append(sample_tmp)
 
     return batch
-
-

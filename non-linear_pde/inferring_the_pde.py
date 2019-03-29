@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import time
 import more_methods as mm
-import cfd_python.advection_diffusion.generate_data as gd  # Change this folder to use different data!
+import generate_data as gd  # Change this folder to use different data!
 
 np.set_printoptions(linewidth=100)
 
@@ -39,6 +39,7 @@ class OptimizerClass:
 
         self.coefs = []  # Storing the coefficients here
         self.M = []  # Storing the moment-matrices here
+        self.param = 0  # Storing additional parameters of the PDE
 
         # Generating the data
         self.batch = gd.generate(options)
@@ -95,7 +96,8 @@ class OptimizerClass:
             for i in range(self.N):
                 self.coefs.append(tf.Variable(coefs[i], dtype=tf.float32, name='coef' + str(i)))
 
-    def optimize_weights(self, stage, coefs=None, layer=None, moment_matrices=None, iteration=None):
+    def optimize_weights(self, stage, coefs=None, layer=None, moment_matrices=None,
+                         param=None, iteration=None):
         """
         The key method of this implementation. It contains of a construction (where we set up the neural network)
         and an execution phase, where the actual execution happens.
@@ -104,8 +106,9 @@ class OptimizerClass:
         :param layer: Using a convolutional neural network with 'layer' many layers, stepping dt*layer in time.
                       For warmup, no layer has to be provided. Will be set to 1.
         :param moment_matrices: Previously learned moment-matrices corresponding to approx. of derivatives
+        :param param: Previously learned additional parameters in the PDE
         :param iteration: Current iteration of warmup stage
-        :return: Learned coefficients and moment-matrices of the PDE with the corresponding loss-value
+        :return: Learned coefficients, parameters and moment-matrices of the PDE with the corresponding loss-value
         """
 
         # Construction phase
@@ -116,6 +119,11 @@ class OptimizerClass:
         with tf.name_scope('initializing_coefs_and_moment_matrices'):
             self.set_M(moment_matrices, stage)
             self.set_coef(coefs)
+
+            if param is not None:
+                self.param = tf.Variable(param, dtype=tf.float32, name='f_param')
+            else:
+                self.param = tf.Variable(np.random.randint(-50, 50), dtype=tf.float32, name='f_param')
 
         # Conversion of the moment-matrices into filters.
         with tf.name_scope('moment_to_filter'):
@@ -142,13 +150,14 @@ class OptimizerClass:
 
             for l in range(layer):
                 out = 0
+                f = mm.f(self.param, input)
                 if self.boundary_cond == 'PERIODIC':
                     input = mm.pad_input(input, self.filter_size)
                 for i in range(self.N):
                     filter = tf.expand_dims(tf.expand_dims(Q[i], axis=-1), -1)
                     out += self.coefs[i] * tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
                 input = out * self.dt + tf.nn.conv2d(input, tf.expand_dims(tf.expand_dims(Q[self.N], axis=-1), -1),
-                                                     strides=[1, 1, 1, 1], padding='VALID')
+                                                     strides=[1, 1, 1, 1], padding='VALID') + f * self.dt
 
         # How the loss will be calculated
         with tf.name_scope('loss'):
@@ -210,6 +219,7 @@ class OptimizerClass:
                 moment_out.append(self.M[i].eval() / div)
             # The extra moment-matrix corresponding to the identity:
             moment_out.append(self.M[self.N].eval() / self.M[self.N].eval()[0, 0])
+            f_param = self.param.eval()
             loss_out = loss.eval()
 
         # Printing results of this layer
@@ -221,8 +231,10 @@ class OptimizerClass:
                 for i in range(self.N):
                     print('%.8f' % coef_out[i])
 
+                print('The parameter of f is %.8f' % f_param)
+
             print('\nThe moment matrices are: \n')
             for i in range(self.N + 1):
                 print(moment_out[i])
 
-        return coef_out, moment_out, loss_out
+        return coef_out, moment_out, f_param, loss_out

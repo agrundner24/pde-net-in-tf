@@ -61,6 +61,9 @@ def addNoise(sample, noise, layers):
 ############ Initial value generator ############
 
 def initgen(mesh_size, freq=3, boundary='Periodic'):
+    """
+    Returns function values for t=0 on a regular grid of size 'mesh_size' in [0, 2*pi]x[0, 2*pi] as a matrix
+    """
     # Default: (mesh_size, freq, boundary) = ([250, 250], 4, 'Periodic')
     if np.iterable(freq):
         return freq

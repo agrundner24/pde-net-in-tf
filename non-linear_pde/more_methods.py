@@ -89,13 +89,13 @@ def filter_to_moment(Q):
 
     return M
 
-
 # for i in range(20):
 #     M = 10*np.random.rand(5,5)
 #     if np.allclose(momentToFilter(filterToMoment(M)) - M, 0) == False:
 #         print('The moment matrix-conversion was unsuccessful')
 #         break
 # print('End of the moment matrix-conversion')
+
 
 def pad_input(input, filter_size):
     """
@@ -126,7 +126,13 @@ def pad_input(input, filter_size):
     return tf.expand_dims(out, axis=-1)
 
 
+# Callback for the optimizer:
 def callback(loss):
     print('Loss: %e' % loss)
     # print('coef:' + str(coef))
     # print('M:' + str(M))
+
+
+# Additional functions in the PDE:
+def f(param, input):
+    return param * tf.sin(input)
