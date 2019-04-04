@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import time
 import more_methods as mm
 import generate_data as gd  # Change this folder to use different data!
 
@@ -155,8 +154,8 @@ class OptimizerClass:
                 for i in range(self.N):
                     filter = tf.expand_dims(tf.expand_dims(Q[i], axis=-1), -1)
                     out += self.coefs[i] * tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
-                input = out * self.dt + tf.nn.conv2d(input, tf.expand_dims(tf.expand_dims(Q[self.N], axis=-1), -1),
-                                                     strides=[1, 1, 1, 1], padding='VALID') + f * self.dt
+                input = tf.nn.conv2d(input, tf.expand_dims(tf.expand_dims(Q[self.N], axis=-1), -1),
+                                     strides=[1, 1, 1, 1], padding='VALID') + self.dt*(out + f)
 
         # How the loss will be calculated
         with tf.name_scope('loss'):
@@ -222,9 +221,7 @@ class OptimizerClass:
             else:
                 sess.run(init)
                 optimizer.minimize(sess, fetches=[loss], loss_callback=mm.callback)
-
-            if stage == "NORMAL":
-                print('End of layer %d' % layer)
+                print('\nEnd of layer %d\n' % layer)
 
             # Evaluating the loss, moment-matrices, coefficients and possibly PDE-parameters
             coef_out = []

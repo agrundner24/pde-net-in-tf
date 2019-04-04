@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import time
 import more_methods as mm
-import cfd_python.advection_diffusion.generate_data as gd  # Change this folder to use different data!
+import generate_data as gd  # Change this folder to use different data!
 
 np.set_printoptions(linewidth=100)
 
@@ -141,11 +141,15 @@ class OptimizerClass:
 
             for l in range(layer):
                 out = 0
+                inp0 = input
                 if self.boundary_cond == 'PERIODIC':
                     input = mm.pad_input(input, self.filter_size)
                 for i in range(self.N):
                     filter = tf.expand_dims(tf.expand_dims(Q[i], axis=-1), -1)
-                    out += self.coefs[i] * tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
+                    if i == 1 or i == 2:
+                        out += self.coefs[i]*inp0 * tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
+                    else:
+                        out += self.coefs[i] * tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
                 input = out * self.dt + tf.nn.conv2d(input, tf.expand_dims(tf.expand_dims(Q[self.N], axis=-1), -1),
                                                      strides=[1, 1, 1, 1], padding='VALID')
 
