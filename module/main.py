@@ -6,7 +6,7 @@ options = {'mesh_size': [250,250],      # How large is the (regular) 2D-grid of 
                                         # Keep mesh_size[0] = mesh_size[1]
            'layers': 9,                 # Layers of the NN. Also counting the initial layer!
            'dt': 0.015,                 # Time discretization. We step dt*(layers - 1) forward in time.
-           'batch_size': 24,             # We take a batch of sub-grids in space
+           'batch_size': 24,            # We take a batch of sub-grids in space
            'noise_level': 0.0,          # Can add some noise to the data (not taken 1 to 1, gets multiplied by stddev)
            'downsample_by': 5,          # Size of sub-grids (in space) * downsample_by = mesh_size
            'filter_size' : 7,           # Size of filters to approximate derivatives via FD

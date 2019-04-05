@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import time
 import more_methods as mm
 import cfd_python.advection_diffusion.generate_data as gd  # Change this folder to use different data!
 
