@@ -10,8 +10,8 @@ options = {'mesh_size': [250, 250],     # How large is the (regular) 2D-grid of 
            'noise_level': 0.0,          # Can add some noise to the data (not taken 1 to 1, gets multiplied by stddev)
            'downsample_by': 5,          # Size of sub-grids (in space) * downsample_by = mesh_size
            'filter_size': 7,            # Size of filters to approximate derivatives via FD
-           'iterations': 30,            # How often to repeat optimization in the warmup-step
-           'max_order': 2,              # Max-order of our hidden PDE. Note: max_order < filter_size!
+           'iterations': 5,             # How often to repeat optimization in the warmup-step
+           'max_order': 3,              # Max-order of our hidden PDE. Note: max_order < filter_size!
            'boundary_cond': 'PERIODIC'  # Set to 'PERIODIC' if data has periodic bdry condition to use periodic padding
            }
 
@@ -34,3 +34,4 @@ for l in range(2, options['layers']):
                                                        moment_matrices=moment_matrices)
 
 print('Program ran for %d seconds' % (time.time() - t0))
+

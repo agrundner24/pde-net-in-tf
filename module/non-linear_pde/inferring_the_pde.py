@@ -5,7 +5,6 @@ import generate_data as gd  # Change this folder to use different data!
 
 np.set_printoptions(linewidth=100)
 
-
 ## For TensorBoard:
 # from datetime import datetime
 # import sys
@@ -191,7 +190,7 @@ class OptimizerClass:
 
         # Otherwise we get issues with CUDNN-initializiation (https://github.com/tensorflow/tensorflow/issues/6698):
         config = tf.ConfigProto()
-        config.gpu_options.per_process_gpu_memory_fraction = 0.3
+        config.gpu_options.allow_growth = True
 
         # Execution phase
         with tf.Session(config=config) as sess:

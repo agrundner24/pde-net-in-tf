@@ -28,7 +28,6 @@ def downsample(sample, scale):
     """
     Returns a regular somewhat random sub-grid of sample, whose size is reduced by a factor of 'scale'.
     """
-
     # np.random.seed(50)
     idx1 = slice(np.random.randint(scale), None, scale)
     idx2 = slice(np.random.randint(scale), None, scale)

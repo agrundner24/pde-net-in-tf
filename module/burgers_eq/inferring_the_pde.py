@@ -188,7 +188,7 @@ class OptimizerClass:
 
         # Otherwise we get issues with CUDNN-initializiation (https://github.com/tensorflow/tensorflow/issues/6698):
         config = tf.ConfigProto()
-        config.gpu_options.per_process_gpu_memory_fraction = 0.7
+        config.gpu_options.allow_growth = True
 
         # Execution phase
         with tf.Session(config=config) as sess:

@@ -35,51 +35,50 @@ def generate(options):
     # y = np.linspace(0, 2*np.pi, num = ny)
     # X, Y = np.meshgrid(x, y)
 
-    ########################### Change the following lines to implement your own data ###########################
-
-    ## Assign initial function:
-    u = com.initgen(options['mesh_size'], freq=4, boundary='Periodic')
-
-    ## Plotting the initial function:
-    # fig = plt.figure(figsize=(11,7), dpi=100)
-    # ax = fig.gca(projection='3d')
-    # surf = ax.plot_surface(X, Y, u[:], cmap=cm.viridis)
-    #
-    # plt.show()
-
-    sample = {}
-    sample['u0'] = u
-
-    for n in range(nt - 1):
-        un = com.pad_input_2(u, 2)[1:, 1:]  # Same triplet of numbers on each side
-
-        u = (un[1:-1, 1:-1] + dt * (nu*(un[2:, 1:-1] + un[0:-2, 1:-1] - 2*un[1:-1, 1:-1]) / dx**2
-                                    + nu*(un[1:-1, 2:] + un[1:-1, 0:-2] - 2*un[1:-1, 1:-1]) / dy**2
-                                    - un[1:-1, 1:-1] * (un[2:, 1:-1] - un[1:-1, 1:-1]) / dx
-                                    - un[1:-1, 1:-1] * (un[1:-1, 2:] - un[1:-1, 1:-1]) / dy))[:-1, :-1]
-
-        sample['u' + str(n+1)] = u
-
-
-    ## sample should at this point be a dictionary with entries 'u0', ..., 'uL', where L = nt                   ##
-    ## For a given j, sample['uj'] is a matrix of size nx x ny containing the function values at time-step dt*j ##
-    ##############################################################################################################
-
     batch = []
 
-    # # Plotting the function values from the last layer:
-    # fig2 = plt.figure()
-    # ax2 = fig2.gca(projection='3d')
-    # surf2 = ax2.plot_surface(X, Y, u, cmap=cm.viridis)
-    #
-    # plt.show()
-
     for i in range(batch_size):
+        ########################### Change the following lines to implement your own data ###########################
 
-        sample_tmp = sample.copy()
-        com.downsample(sample_tmp, downsample_by)
-        com.addNoise(sample_tmp, noise_level, nt)
+        ## Assign initial function:
+        u = com.initgen(options['mesh_size'], freq=4, boundary='Periodic')
 
-        batch.append(sample_tmp)
+        ## Plotting the initial function:
+        # fig = plt.figure(figsize=(11,7), dpi=100)
+        # ax = fig.gca(projection='3d')
+        # surf = ax.plot_surface(X, Y, u[:], cmap=cm.viridis)
+        #
+        # plt.show()
+
+        sample = {}
+        sample['u0'] = u
+
+        for n in range(nt - 1):
+            un = com.pad_input_2(u, 2)[1:, 1:]  # Same triplet of numbers on each side
+
+            u = (un[1:-1, 1:-1] + dt * (nu*(un[2:, 1:-1] + un[0:-2, 1:-1] - 2*un[1:-1, 1:-1]) / dx**2
+                                        + nu*(un[1:-1, 2:] + un[1:-1, 0:-2] - 2*un[1:-1, 1:-1]) / dy**2
+                                        - un[1:-1, 1:-1] * (un[2:, 1:-1] - un[1:-1, 1:-1]) / dx
+                                        - un[1:-1, 1:-1] * (un[1:-1, 2:] - un[1:-1, 1:-1]) / dy))[:-1, :-1]
+
+            sample['u' + str(n+1)] = u
+
+
+        ## sample should at this point be a dictionary with entries 'u0', ..., 'uL', where L = nt                   ##
+        ## For a given j, sample['uj'] is a matrix of size nx x ny containing the function values at time-step dt*j ##
+        ##############################################################################################################
+
+
+        # # Plotting the function values from the last layer:
+        # fig2 = plt.figure()
+        # ax2 = fig2.gca(projection='3d')
+        # surf2 = ax2.plot_surface(X, Y, u, cmap=cm.viridis)
+        #
+        # plt.show()
+
+        com.downsample(sample, downsample_by)
+        com.addNoise(sample, noise_level, nt)
+
+        batch.append(sample)
 
     return batch

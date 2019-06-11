@@ -43,7 +43,6 @@ class OptimizerClass:
         self.batch = gd.generate(options)
 
     def set_M(self, M, stage):
-
         # Either way we cannot work with self.M already being filled with immutable tf.tensors
         self.M = []
 
@@ -183,7 +182,7 @@ class OptimizerClass:
 
         # Otherwise we get issues with CUDNN-initializiation (https://github.com/tensorflow/tensorflow/issues/6698):
         config = tf.ConfigProto()
-        config.gpu_options.per_process_gpu_memory_fraction = 0.7
+        config.gpu_options.allow_growth = True
 
         # Execution phase
         with tf.Session(config=config) as sess:
