@@ -17,10 +17,10 @@ options = {'mesh_size': [250, 250],     # How large is the (regular) 2D-grid of 
 
 
 === Analyzing all 100 runs ===
-==> Average square error is: 
-    Worst: , where the factor for the non-linear term is and the coefficients
-    Best: , where the factor for the non-linear term is and the coefficients
-==> Average runtime: seconds
+==> Average square error is: 0.12077838
+    Worst: 0.37805475, where the factor for the non-linear term is 12.96098137 and the coefficients [-0.0044513587, -3.569355e-05, -0.00010568465, 0.2935063, -0.00040430922, 0.29185855, 0.005663034, 0.009493864, 0.02663379, 0.006728946]
+    Best: 0.00033899, where the factor for the non-linear term is 14.93957710 and the coefficients [-0.003863389, 7.193122e-05, 2.5596935e-06, 0.2964997, -0.00093219517, 0.29682764, 0.0028260113, -0.00076617365, 0.005503991, 0.0009767194]
+==> Average runtime: 106.97 seconds
 
 
 === Runs ===
