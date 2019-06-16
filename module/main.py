@@ -16,7 +16,7 @@ options = {'mesh_size': [250, 250],     # How large is the (regular) 2D-grid of 
            'boundary_cond': 'PERIODIC'  # Set to 'PERIODIC' if data has periodic bdry condition to use periodic padding
            }
 
-for q in range(15):
+for q in range(100):
 
     t0 = time.time()
 
