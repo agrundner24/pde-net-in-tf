@@ -156,7 +156,7 @@ for i in range(24):
     #     for j in range(6):
     #         plot_solution(batch_new[i]['u%d' % j], sample_num=i, isNew=True, isGood=True, t=0.005*j)
     # Plotting a bad result (Sum > 25)
-    if np.sum(np.abs((batch_old[i]['u5'] - batch_new[i]['u5']))) / (250 ** 2) > 10:
+    if np.sum(np.abs((batch_old[i]['u5'] - batch_new[i]['u5']))) / (250 ** 2) > 5:
         for j in range(6):
             plot_solution(batch_old[i]['u%d' % j], sample_num=i, isNew=False, isGood=False, t=0.005*j)
         for j in range(6):
