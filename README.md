@@ -16,7 +16,7 @@ Each of these scripts will do 100 tests and produce a results.txt-file with 100 
     *Program ran for 117 seconds*   
     *[-0.005465187, 1.9912698, 1.9911757, 0.5203466, -0.0024462892, 0.52137536, 0.0011048209, -0.001643187, 0.001238143, -0.0005990097]*   
     *MSE: 0.00010666*    
-=> How long did it take to run this one test. What are the inferred coefficients (for the order see readme.md on Github). What is the mean squared error of the inferred coefficients.
+=> How long did it take to run this one test. What are the inferred coefficients (for the order see below). What is the mean squared error of the inferred coefficients.
 
 The output stream contains the learned coefficients (the ones corresponding to the lowest order derivatives first) and moment-matrices.
 In the linear case the order is as follows:
