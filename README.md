@@ -1,4 +1,4 @@
-# pde-net-in-tf
+# PDE-Net in TensorFlow or: CNet
 My implementation of PDE-Net (https://arxiv.org/pdf/1710.09668.pdf) in Tensorflow
 
 To run it on the GPU: Need tensorflow 1.13.1 + cuDNN 7.5.0 + CUDA 10.0. Other versions might work as well, but we have used this combination.
