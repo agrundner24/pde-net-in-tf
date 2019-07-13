@@ -1,8 +1,8 @@
 import numpy as np
 import common_methods as com
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt
+# import matplotlib.cm as cm
+# from mpl_toolkits.mplot3d import Axes3D
 
 def generate(options, coefs=[0, -1, -1, 0.3, 0, 0.3, 0, 0, 0, 0], downsample = True, method = 'orig', init = None):
     """
@@ -46,9 +46,15 @@ def generate(options, coefs=[0, -1, -1, 0.3, 0, 0.3, 0, 0, 0, 0], downsample = T
         if init is not None:
             u = init
         elif method == 'orig':
-            u = com.initgen(options['mesh_size'], freq=3, boundary='Periodic')
+            u = com.initgen(options['mesh_size'], freq=4, boundary='Periodic')
         elif method == 'rbf':
             u = com.initgen_custom_rbf(options['mesh_size'])
+        elif method == 'wavelet':
+            u = com.initgen_custom_wavelet(options['mesh_size'])
+        elif method == 'poly':
+            u = com.initgen_custom_order2pol(options['mesh_size'])
+        elif method == 'low_freq':
+            u = com.initgen(options['mesh_size'], freq=2, boundary='Periodic')
 
 
         sample['u0'] = u[(nt - 1)*2:(nx - (nt - 1)*2), (nt - 1)*2:(ny - (nt - 1)*2)]
@@ -97,11 +103,9 @@ def generate(options, coefs=[0, -1, -1, 0.3, 0, 0.3, 0, 0, 0, 0], downsample = T
         # # Plotting the function values from the last layer:
         # fig2 = plt.figure()
         # ax2 = fig2.gca(projection='3d')
-        # surf2 = ax2.plot_surface(X, Y, u, cmap=cm.viridis)
+        # surf2 = ax2.plot_surface(X[10:260, 10:260], Y[10:260, 10:260], u, cmap=cm.viridis)
         #
         # plt.show()
-
-
 
         com.downsample(sample, downsample_by)
         com.addNoise(sample, noise_level, nt)

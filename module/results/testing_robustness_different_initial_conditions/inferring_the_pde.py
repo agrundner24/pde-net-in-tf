@@ -41,7 +41,7 @@ class OptimizerClass:
         self.M = []  # Storing the moment-matrices here
 
         # Generating the data
-        self.batch, self.inits = gd.generate(options, method='rbf')
+        self.batch, self.inits = gd.generate(options, method='low_freq')  # For inference
 
     def set_M(self, M, stage):
 

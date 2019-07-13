@@ -18,61 +18,66 @@ options = {'mesh_size': [270, 270],     # How large is the (regular) 2D-grid of 
            'boundary_cond': 'noper'     # Only with noper for these tests.
            }
 
-t0 = time.time()
+for ite in range(10):
+    t0 = time.time()
 
-a = inferring_the_pde.OptimizerClass(options)
+    a = inferring_the_pde.OptimizerClass(options)
 
-# Repeat the warmup to hopefully find the global optimum while keeping
-# the moment-matrices fixed and thus the number of parameters low
-coefs, _, _ = a.optimize_weights(stage='WARMUP', iterations=options['iterations'])
+    # Repeat the warmup to hopefully find the global optimum while keeping
+    # the moment-matrices fixed and thus the number of parameters low
+    coefs, _, _ = a.optimize_weights(stage='WARMUP', iterations=options['iterations'])
 
-print('----------------------------------------------')  # End of warmup
+    print('----------------------------------------------')  # End of warmup
 
-# Optimizing for t>0 while partially freeing up the moment-matrices as well
-with tf.variable_scope('normal_%d' % 1):
-    coefs, moment_matrices, _ = a.optimize_weights(stage='NORMAL', coefs=coefs, layer=1)
-for l in range(2, options['layers']):
-    with tf.variable_scope('normal_%d' % l):
-        coefs, moment_matrices, _ = a.optimize_weights(stage='NORMAL', coefs=coefs, layer=l,
-                                                       moment_matrices=moment_matrices)
+    # Optimizing for t>0 while partially freeing up the moment-matrices as well
+    with tf.variable_scope('normal_%d' % 1):
+        coefs, moment_matrices, _ = a.optimize_weights(stage='NORMAL', coefs=coefs, layer=1)
+    for l in range(2, options['layers']):
+        with tf.variable_scope('normal_%d' % l):
+            coefs, moment_matrices, _ = a.optimize_weights(stage='NORMAL', coefs=coefs, layer=l,
+                                                           moment_matrices=moment_matrices)
 
-print('Program ran for %d seconds' % (time.time() - t0))
+    print('Program ran for %d seconds' % (time.time() - t0))
 
 
-# To test robustness:
-def test_robustness(options, coefs):
-    sample1, init = gd.generate(options, coefs=coefs, downsample=False, method='orig')
-    sample2, _ = gd.generate(options, downsample=False, init=init)
-    return sample1, sample2
+    # To test robustness:
+    def test_robustness(options, coefs):
+        sample1, init = gd.generate(options, coefs=coefs, downsample=False, method='low_freq')  # For testing
+        sample2, _ = gd.generate(options, downsample=False, init=init)
+        return sample1, sample2
 
-sample1, sample2 = test_robustness(options, coefs)
+    sample1, sample2 = test_robustness(options, coefs)
 
-# Test results - no downsampling
-# Sup
-with open('results_sup', 'a') as file:
-    file.write('Results from one batch with 24 samples.\nInferred coefficients: ' + str(coefs)
-               + '\n  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
-    file.write('='*63 + '\n')
-    file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
-               tuple([np.max(np.abs((sample1['u%d'% j] - sample2['u%d'% j]))) for j in range(6)]))
-    file.write('\n\n')
-# Squared
-with open('results_squared', 'a') as file:
-    file.write('Results from one batch with 24 samples.\nInferred coefficients: ' + str(coefs)
-               + '\n  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
-    file.write('='*63 + '\n')
-    file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
-               tuple([np.sum((sample1['u%d'% j] - sample2['u%d'% j])**2)/(250**2) for j in range(6)]))
-    file.write('\n\n')
-# Sum
-with open('results_sum', 'a') as file:
-    file.write('Results from one batch with 24 samples.\nInferred coefficients: ' + str(coefs)
-               + '\n  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
-    file.write('='*63 + '\n')
-    file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
-               tuple([np.sum(np.abs((sample1['u%d'% j] - sample2['u%d'% j])))/(250**2) for j in range(6)]))
-    file.write('\n\n')
+    # Test results - no downsampling
+    # Sup
+    with open('results_sup', 'a') as file:
+        file.write('Inferred coefficients: ' + str(coefs) + '\n')
+        file.write('MSE: %.6f\n' % (np.sum((coefs - np.array([0,-1,-1,0.3,0,0.3,0,0,0,0]))**2)/10))
+        file.write('  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
+        file.write('='*63 + '\n')
+        file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
+                   tuple([np.max(np.abs((sample1['u%d'% j] - sample2['u%d'% j]))) for j in range(6)]))
+        file.write('\n\n')
+    # Squared
+    with open('results_squared', 'a') as file:
+        file.write('Inferred coefficients: ' + str(coefs) + '\n')
+        file.write('MSE: %.6f\n' % (np.sum((coefs - np.array([0,-1,-1,0.3,0,0.3,0,0,0,0]))**2)/10))
+        file.write('  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
+        file.write('='*63 + '\n')
+        file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
+                   tuple([np.sum((sample1['u%d'% j] - sample2['u%d'% j])**2)/(250**2) for j in range(6)]))
+        file.write('\n\n')
+    # Sum
+    with open('results_sum', 'a') as file:
+        file.write('Inferred coefficients: ' + str(coefs) + '\n')
+        file.write('MSE: %.6f\n' % (np.sum((coefs - np.array([0,-1,-1,0.3,0,0.3,0,0,0,0]))**2)/10))
+        file.write('  t = 0  | t=0.005 | t=0.01  | t=0.015 | t=0.02  | t=0.025\n')
+        file.write('='*63 + '\n')
+        file.write('%8.3f |%8.3f |%8.3f |%8.3f |%8.3f |%8.3f\n' %
+                   tuple([np.sum(np.abs((sample1['u%d'% j] - sample2['u%d'% j])))/(250**2) for j in range(6)]))
+        file.write('\n\n')
 
+    tf.reset_default_graph()
 
 # def plot_solution(u, sample_num, isNew, isGood, t):
 #     # lb = X_star.min(0)

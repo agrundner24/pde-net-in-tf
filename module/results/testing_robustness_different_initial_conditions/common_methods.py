@@ -113,28 +113,63 @@ def _initgen_periodic(mesh_size, freq=3):
 
 
 def initgen_custom_rbf(mesh_size):
-
     def rbf(x, r, bump, N):
         s = 0
         for i in range(N):
             s += r[i, 0]*np.exp(-(x - bump[i, :]) @ (x - bump[i, :])/r[i, 1])
         return s
-
-    mesh_size = mesh_size[0]
     # 5 bumps
     N = 5
     bump = 2*np.pi * np.random.rand(N, 2)
     # Random coefficients and variance
     r = 10 * np.random.rand(N, 2)
     # Creating x-y-values
-    a = np.tile(np.linspace(0, 2 * np.pi, mesh_size), mesh_size)
-    b = np.repeat(np.linspace(0, 2 * np.pi, mesh_size), mesh_size)
-    m = np.vstack((a, b))
+    a = np.tile(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
+    b = np.repeat(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
     # Applying f to each of these values
-    out = np.zeros((mesh_size, mesh_size))
-    for i in range(mesh_size):
-        for j in range(mesh_size):
-            out[i,j] = rbf(m[:, i+j*mesh_size], r, bump, N)
-    return out
+    out = np.zeros(mesh_size[0]**2)
+    for i in range(mesh_size[0]**2):
+        out[i] = rbf([a[i], b[i]], r, bump, N)
+    return out.reshape(mesh_size)
 
-# def initgen_custom_2(mesh_size):
+
+def initgen_custom_wavelet(mesh_size):
+    def mex_hat(x, r, bump, N):
+        s = 0
+        for i in range(N):
+            sig = r[i, 0]
+            s += 1/(np.pi*sig**2)*(1-0.5*((x - bump[i, :]) @ (x - bump[i, :])/sig**2))* \
+                 np.exp(-(x - bump[i, :]) @ (x - bump[i, :])/(2*sig**2))
+        return s
+    # 5 bumps
+    N = 5
+    bump = 2*np.pi * np.random.rand(N, 2)
+    # Random parameters in [0.2, 1.2]
+    r = np.random.rand(N, 1) + 0.2
+    # Creating x-y-values
+    a = np.tile(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
+    b = np.repeat(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
+    # Applying f to each of these values
+    out = np.zeros(mesh_size[0]**2)
+    for i in range(mesh_size[0]**2):
+        out[i] = mex_hat([a[i], b[i]], r, bump, N)
+    return out.reshape(mesh_size)
+
+
+def initgen_custom_order2pol(mesh_size):
+    def order2pol(x, r, center):
+        y0 = x[0] - center[0]
+        y1 = x[1] - center[1]
+        return r[0]*y0**2 + r[1]*y1**2 + r[2]*y0*y1 + r[3]*y0 + r[4]*y1 + r[5]
+    center = 2*np.pi * np.random.rand(2)
+    # Random coefficients in [-10, 10]
+    r = (np.random.rand(6) - 0.5)*20
+    # Creating x-y-values
+    a = np.tile(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
+    b = np.repeat(np.linspace(0, 2 * np.pi, mesh_size[0]), mesh_size[0])
+    # Applying f to each of these values
+    out = np.zeros(mesh_size[0]**2)
+    for i in range(mesh_size[0]**2):
+        out[i] = order2pol([a[i], b[i]], r, center)
+    return out.reshape(mesh_size)
+
